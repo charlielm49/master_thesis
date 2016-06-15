@@ -264,6 +264,7 @@ def leer_texto(fp):
         #ok print tmp
         tmpFull.append([int(tmp[0]), int(tmp[1])])
 
+    print tmpFull[:10]
     # regresa una lista con todas las palabras del texto en esa lista
     return tmpFull
 
