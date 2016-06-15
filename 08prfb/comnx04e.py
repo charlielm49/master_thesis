@@ -589,9 +589,9 @@ def main():
     print "sorted", sorted(nodeEigVec, key=operator.itemgetter(1), \
         reverse=True)[:10]
     # (Sorted)Results for original Klein example of simple graph
-    #(1, [0.618189433764439]), (2, [0.5737952417102831]), 
-    #(0, [0.522037084149513]), (4, [0.07830556262242697]), 
-    #(3, [0.07052079908686405]), (5, [0.07052079908686405])
+    #  (1, [0.618189433764439]), (2, [0.5737952417102831]),
+    # (0, [0.522037084149513]), (4, [0.07830556262242697]),
+    # (3, [0.07052079908686405]), (5, [0.07052079908686405])
 
     #XXXXXXXXXXXXXXX END: MATRIX STUFF FOR G XXXXXXXXXXXXXXX
 
