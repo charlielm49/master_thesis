@@ -133,9 +133,9 @@ def getInvDvMatr(nodeEdgeL):
 # initVector = v
 def iteration(A, v):
     MAX_ITER = 100 # works ok for simple cases of PageRank
-    MAX_ITER = 100000
+    MAX_ITER = 10000
     EPS = 1.0e-6 # works ok for simple cases of PageRank
-    EPS = 1.0e-18
+    EPS = 1.0e-12
     for i in range(MAX_ITER):
         # guardamos el vector anterior
         vOld = v.copy()
@@ -261,8 +261,7 @@ def leer_texto(fp):
     # procesamiento de archivo de entrada completo
     for line in fp:
         tmp = line.split()
-        #ok
-        print tmp
+        #ok print tmp
         tmpFull.append([int(tmp[0]), int(tmp[1])])
 
     # regresa una lista con todas las palabras del texto en esa lista
