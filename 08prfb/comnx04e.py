@@ -264,7 +264,6 @@ def leer_texto(fp):
         #ok print tmp
         tmpFull.append([int(tmp[0]), int(tmp[1])])
 
-    print tmpFull[:10]
     # regresa una lista con todas las palabras del texto en esa lista
     return tmpFull
 
@@ -352,7 +351,9 @@ def main():
 
     # Network reading from file
     edgeList = leer_texto(inFilePointer01)
-    print edgeList
+    print "\nEdge/Graph Info"
+    print "edgeList (data read, first 10):"
+    pprint.pprint(edgeList[:10])
 
     #XXXXXXXXXXXXXXX END: FILE & GRAPH READING XXXXXXXXXXXXXXX
 
@@ -386,14 +387,16 @@ def main():
     # Manual reading of node-Community file (artificial example)
     partsList = leer_texto(inFilePointer02)
 
-    print "communityInfo"
+    print "\nCommunity Info"
     # partsList is a list of 2-tuples, having pairs of (node, community)
     # [(0, 0), (1, 0), (2, 0), (3, 0), ..., (4036, 6), (4037, 6), (4038, 6)]
     #ok_first10:
-    print "first partsList ", partsList[:5]
+    print "first partsList "
+    pprint.pprint(partsList[:10])
     #ok_all_items: pprint.pprint(partsList)
     #ok_last10:
-    print "last partsList ", partsList[-5:]
+    print "last partsList "
+    pprint.pprint(partsList[-10:])
     # send node-comm values to file
     #escribir_texto(partsList, inFilePointer01)
 
@@ -427,61 +430,52 @@ def main():
     # send only the values of commununities to get the list of unique communit.
     commVals = [operator.itemgetter(1)(item) for item in partsList]
     uniqCommL, lenUComL = getUniqueComm(commVals)
-    print "uniqCommL, lenUComL", uniqCommL, lenUComL
+    print "uniqCommL, lenUComL", uniqCommL[:5], lenUComL
 
     # send only the values of edges to get the list of unique edges.
     edgeVals = [operator.itemgetter(0)(item) for item in partsList]
     uniqEdgeL, lenUEdgL = getUniqueComm(edgeVals)
-    print "uniqEdgeL, lenUEdgL", uniqEdgeL, lenUEdgL
+    print "uniqEdgeL, lenUEdgL", uniqEdgeL[:5], lenUEdgL
 
 
     # obtain incidence matrix vertex-hyperedge (H)
     # en networkx basta con meter la lista que salio de las comunidades
-    print "\n--Creating Incidence Matrix from node-community pairs"
+    print "\n--Creating Incidence Matrix from node-community pairs\n"
     # 2) send 1) node-community 2-tuple list & number of unique communities
     # get the incidence matrix
     # sparse format
     H = createPrevCSR(partsList, lenUEdgL, lenUComL)
     print H[:10]
 
-    print "\n--Creating Inverse Matrix from node-community pairs"
+    print "\n--Creating Inverse Matrix from node-community pairs\n"
     # 3) get invDvMatr
-    '''
-    ################# TEST ##########
-    copy = partsList
-    #ok print copy
-    print len(copy)
-    #copy.extend([(0,1), (1,1)])
-    print len(copy)
-    invDvMatr = getInvDvMatr(copy)
-    ################# TEST ##########
-    '''
     #ok_GOOD: 
     invDvMatr = getInvDvMatr(partsList)
-    print invDvMatr
+    print "inv vertex Degree Matrix:\n", invDvMatr[:10]
 
     dv_1H = invDvMatr.dot(H)
-    print "dv-1H", dv_1H
+    print "Mult of inv vertex Degree Matrix by Incidence:)\n", \
+        dv_1H[:10]
 
 
     # 4) get invDeMatr
-    # es lo mismo que las Dv, pero volteamos los n'umeros y aplicamos lo mismo que Dv
-    # volteamos indices:
-    #TEST: newList = [(item[1], item[0]) for item in copy]
+    # es lo mismo que las Dv, pero volteamos los numeros y aplicamos
+    # lo mismo que Dv, solo intercambiamos indices i -> j:
     newList = [(item[1], item[0]) for item in partsList]
     # ok newlist: 
-    print "newList for De", newList
+    print "newList for De (changing the indexes)", newList
     invDeMatr = getInvDvMatr(newList)
-    print invDeMatr
+    print "inv h-edge Degree Matrix:\n", invDeMatr[:10]
 
     de_1Ht = invDeMatr.dot(H.T)
-    print "de-1Ht\n", de_1Ht
+    print "Mult of inv h-edge Degr Matr by Incidence.T:)\n", \
+        de_1Ht[:10]
 
 
     # --- Ahora la lmultiplicacion completa:
 
     MH = dv_1H.dot(de_1Ht)
-    print "MH\n", MH
+    print "\nMH\n", MH[:10]
 
     # --- Matriz de teletransportacion
     matSize = len(MH)
@@ -507,18 +501,18 @@ def main():
     # necesitamos el primer eigenvector (eigenvec)
     # Define initial vector v
     v = np.matrix(makeInitVec(matSize))
-    print("v", v.T)
+    print "v", v.T[:3]
 
     # Obtenemos los eigenvec y eigenval con A y v
     # NOTE: the code works correctly for column stochastic matrices
     # so, if the matrix is row-stochastic, we need to transpose it
     eigVal, eigVec = iteration(MH2.T, v.T)  # need to be a matrix
-    print("eigVal = ", eigVal, type(eigVal))
-    print("eigVec = /n", eigVec, type(eigVec))
+    print "eigVal = ", eigVal, type(eigVal)
+    print "eigVec = \n", eigVec[:10], type(eigVec)
 
     nodeEigVec = [(i, j) for i, j in enumerate(np.matrix.tolist(eigVec))]
-    print nodeEigVec[:10]
-    pprint.pprint(nodeEigVec)
+    #ok: print nodeEigVec[:10]
+    pprint.pprint(nodeEigVec[:10])
     print "sorted", sorted(nodeEigVec, key=operator.itemgetter(1), \
         reverse=True)[:10]
 
@@ -532,18 +526,20 @@ def main():
     
     # obtain incidence matrix vertex-vertex (H)
     # en networkx we only need to add the list of (edge, edge)
-    print "\n--Creating Incidence Matrix from edge-edge pairs"
+    print "\n--Creating Incidence Matrix from edge-edge pairs\n"
     # sparse format
     G = createPrevCSR(edgeList, lenUEdgL, lenUEdgL)
     print G[:10]
     
-    print "\n--Creating Inverse Matrix from edge-edge pairs"
+    print "\n--Creating Inverse Matrix from edge-edge pairs\n"
     # get invDvMatr
     invDvMatrG = getInvDvMatr(edgeList)
-    print "invDvMatrG\n", invDvMatrG
+    print "inv vertex Degree Matrix G:\n", \
+        invDvMatrG[:10]
 
     dv_1G = invDvMatrG.dot(G)
-    print "dv-1G \n", dv_1G
+    print "Mult of inv vertex Degree Matrix by Incidence \n", \
+        dv_1G[:10]
     
     # --- Matriz de teletransportacion
     matSize = len(dv_1G)
@@ -577,18 +573,19 @@ def main():
     # necesitamos el primer eigenvector (eigenvec)
     # Define initial vector v
     v = np.matrix(makeInitVec(matSize))
-    print("v", v.T)
+    print "v", v.T[:3]
 
     # Obtenemos los eigenvec y eigenval con A y v
     # NOTE: the code works correctly for column stochastic matrices
     # so, if the matrix is row-stochastic, we need to transpose it
     eigVal, eigVec = iteration(MG.T, v.T)  # need to be a matrix
-    print("eigVal = ", eigVal, type(eigVal))
-    print("eigVec = /n", eigVec, type(eigVec))
+    print "eigVal = ", eigVal, type(eigVal)
+    print "eigVec = \n", eigVec[:10], type(eigVec)
 
+    # printing node-eigenvector value
     nodeEigVec = [(i, j) for i, j in enumerate(np.matrix.tolist(eigVec))]
-    print nodeEigVec[:10]
-    pprint.pprint(nodeEigVec)
+    #ok: print nodeEigVec[:10]
+    pprint.pprint(nodeEigVec[:10])
     print "sorted", sorted(nodeEigVec, key=operator.itemgetter(1), \
         reverse=True)[:10]
     # (Sorted)Results for original Klein example of simple graph
