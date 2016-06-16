@@ -284,14 +284,15 @@ def newEdgeComm3(listEdges, oldComm):  # ok
         #ok:
         print "newCommVal", newCommVal
         # build edge-comm pair
-        newPair = (Ed1, newCommVal)
+        #newPair = (Ed1, newCommVal) # tuple type for deduplicating
+        newPair = [Ed1, newCommVal]
         if newPair not in lista:
             # add group of second edge to previous grp value/values
             lista.append(newPair)
             #ok: print "lista (mete valor del nvo gpo)", lista
 
     # deduplicate list:
-    lista = set(lista)
+    #lista = set(lista)
 
     return lista
 
@@ -333,7 +334,7 @@ def abrir_archivos():
         # no blank lines at the end of file
         filename_IN01 = "data/facebook_combined.txt"  # este sí cambia
         #filename_IN01 = "data/facebook_combined_small.txt"  # este sí cambia
-        #filename_IN01 = "data/smallnet.txt"
+        filename_IN01 = "data/smallnet.txt"
         fpIN01 = open(filename_IN01, 'r')
         # outfile for Cytoscape visualization
         filename_IN02 = "data/smallgrp.txt"
@@ -359,26 +360,26 @@ def main():
 
     # This is for automatic dtection of groups with NX
     # NOTE: for the Klein example, the graph needs to be directed
-
+    '''
     gfb = nx.read_edgelist("data/facebook_combined.txt",
                            create_using=nx.Graph(),
                            nodetype=int
                            )
 
-    '''
+
     gfb = nx.read_edgelist("data/smallnet.txt",
                            create_using=nx.Graph(),
                            nodetype=int
                            )
     '''
-    '''
+
     # Use DiGraph for directed graph
     gfb = nx.read_edgelist("data/smallnet.txt",
                            create_using=nx.DiGraph(),
                            nodetype=int
                            )
 
-
+    '''
     gfb = nx.read_edgelist("data/facebook_combined_small.txt",
                            create_using=nx.Graph(),
                            nodetype=int
@@ -421,19 +422,20 @@ def main():
     # drawing of communities disabled for PR code
     #okButDisabled: detectComm(gfb, None)
     '''
+    # ABOVE permanently disabled, we don't need the graph
 
+    '''
     #original automatic community detection:
     parts = community.best_partition(gfb)
     # parts is a dictionary having pairs of node-community
     # print type(parts)
     #original automatic community detection:
     partsList = parts.items() # create a new list var to manipulate
-    print "communities automatically detected\n"
-
+    print "communities automatically detected"
+    '''
     # Manual reading of node-Community file (artificial example)
-    #partsList = leer_texto(inFilePointer02)
-    #print "communities articially created (read from file)\n"
-
+    partsList = leer_texto(inFilePointer02)
+    print "communities articially created (read from file)"
 
     print "\nCommunity Info"
     # partsList is a list of 2-tuples, having pairs of (node, community)
@@ -579,7 +581,7 @@ def main():
     
     # obtain incidence matrix vertex-vertex (H)
     # en networkx we only need to add the list of (edge, edge)
-    print "\n--Creating Incidence Matrix from edge-edge pairs\n"
+    print "\n--Creating Incidence Matrix from edge-edge pairs - GRAPH\n"
     # sparse format
     G = createPrevCSR(edgeList, lenUEdgL, lenUEdgL)
     print G[:10]
@@ -604,7 +606,8 @@ def main():
 
     # up to here, everything is fine with example from Klein
     # correct results ae obtained
-    #ok simple graph of Klein: MG = 0.85 * dv_1G + 0.15 * teleMat
+    #ok simple graph of Klein:
+    #MG = 0.85 * dv_1G + 0.15 * teleMat
     #ok: print "MG\n", MG[:10,:10]
     
     # but now we add the HG matrix to this (telemat already included)
