@@ -276,13 +276,11 @@ def newEdgeComm3(listEdges, oldComm):  # ok
     oldCommD = dict(oldComm)
 
     for edgePair in listEdges:  # [0, 0], [0, 1] loop over EDGES
-        #ok:
-        print "edgePair", edgePair
+        #ok: print "edgePair", edgePair
         Ed1 = edgePair[0]  # first edge
         Ed2 = edgePair[1]  # second edge
         newCommVal = oldCommD[Ed2]  # group of the second edge
-        #ok:
-        print "newCommVal", newCommVal
+        #ok: print "newCommVal", newCommVal
         # build edge-comm pair
         newPair = (Ed1, newCommVal)
         if newPair not in lista:
@@ -291,10 +289,11 @@ def newEdgeComm3(listEdges, oldComm):  # ok
             #ok: print "lista (mete valor del nvo gpo)", lista
 
     # deduplicate list:
-    lista = set(lista)
+    #lista = set(lista)
+    # ok print: print "not necessary to de-duplicate in version 3"
 
-    return lista
-
+    # need to convert back again in order to print first items
+    return list(lista)
 
 def leer_texto(fp):
     tmpFull = []
@@ -451,7 +450,8 @@ def main():
     #XXXXXXXXXXXXXXX END: COMM STUFF XXXXXXXXXXXXXXX
 
 
-
+    '''
+    '''
     #XXXXXXXXXXXXXXX BEG: HYPERG STUFF XXXXXXXXXXXXXXX
 
     # construct new overlapping hyperedges from non-overlapping ones
@@ -465,15 +465,15 @@ def main():
     # This returns one list of lists with all node-comm pairs: (overlapping)
     # send edge list & old comm list
     overlapComms = newEdgeComm3(edgeList, partsList)
-    print "overlapComms", overlapComms
+    #ok print all: print "overlapComms", overlapComms
+    print "overlapComms", overlapComms[:10]
     print "len(overlapComms)", len(overlapComms)
 
     # Var reassignment to avoid disruption in the downstream code
     partsList = overlapComms
 
     #XXXXXXXXXXXXXXX END: HYPERG STUFF XXXXXXXXXXXXXXX
-    '''
-    '''
+
 
 
     #XXXXXXXXXXXXXXX BEG: MATRIX STUFF FOR HG XXXXXXXXXXXXXXX
@@ -481,12 +481,12 @@ def main():
     # send only the values of commununities to get the list of unique communit.
     commVals = [operator.itemgetter(1)(item) for item in partsList]
     uniqCommL, lenUComL = getUniqueComm(commVals)
-    print "uniqCommL, lenUComL", uniqCommL[:5], lenUComL
+    print "\nuniqCommL, lenUComL", uniqCommL[:5], lenUComL
 
     # send only the values of edges to get the list of unique edges.
     edgeVals = [operator.itemgetter(0)(item) for item in partsList]
     print "len(edgeVals)", len(edgeVals)
-    print "sorted", sorted(edgeVals)
+    #ok print all: print "sorted", sorted(edgeVals)
     uniqEdgeL, lenUEdgL = getUniqueComm(edgeVals)
     print "uniqEdgeL, lenUEdgL", uniqEdgeL[:5], lenUEdgL
 
@@ -498,7 +498,8 @@ def main():
     # get the incidence matrix
     # sparse format
     H = createPrevCSR(partsList, lenUEdgL, lenUComL)
-    print H[:10]
+    print H[:10], "\n"
+    print H[-10:]
 
     print "\n--Creating Inverse Matrix from node-community pairs\n"
     # 3) get invDvMatr
@@ -516,7 +517,7 @@ def main():
     # lo mismo que Dv, solo intercambiamos indices i -> j:
     newList = [(item[1], item[0]) for item in partsList]
     # ok newlist: 
-    print "newList for De (changing the indexes)", newList
+    print "newList for De (changing the indexes)", newList[:10]
     invDeMatr = getInvDvMatr(newList)
     print "inv h-edge Degree Matrix:\n", invDeMatr[:10]
 
@@ -566,12 +567,13 @@ def main():
     nodeEigVec = [(i, j) for i, j in enumerate(np.matrix.tolist(eigVec))]
     #ok: print nodeEigVec[:10]
     pprint.pprint(nodeEigVec[:10])
-    print "sorted", sorted(nodeEigVec, key=operator.itemgetter(1), \
-        reverse=True)[:10]
+    print "sorted\n"
+    pprint.pprint(sorted(nodeEigVec, key=operator.itemgetter(1), \
+        reverse=True)[:10])
 
     #XXXXXXXXXXXXXXX END: MATRIX STUFF FOR HG XXXXXXXXXXXXXXX
 
-
+    '''
     #XXXXXXXXXXXXXXX BEG: MATRIX STUFF FOR G XXXXXXXXXXXXXXX
 
     # We need to build the vertex-edge list [(), (), ...]
@@ -610,6 +612,7 @@ def main():
     # but now we add the HG matrix to this (telemat already included)
     # THINK about whre to add the teletransp matrix
     # CAREFUL: add two rw-stochastic or two column-stochastic matrices
+
     MG = 0.85 * dv_1G + 0.15 * MH2
     print "MG\n", MG[:10,:10]
 
@@ -647,7 +650,7 @@ def main():
     # (3, [0.07052079908686405]), (5, [0.07052079908686405])
 
     #XXXXXXXXXXXXXXX END: MATRIX STUFF FOR G XXXXXXXXXXXXXXX
-
+    '''
 
     print "\n--Obtaining PageRank for Graph"
     # PR of graph - dictionary {node: pr value}
