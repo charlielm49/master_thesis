@@ -228,29 +228,69 @@ def newEdgeComm2(listEdges, oldComm):  # ok
     # OUT: [[0, 0], [0, 1], [1, 1], [2, 3], [3, 4], ...]
 
     # change oldComm to dir for efficiently finding of node
+    print "oldComm (edge-comm - non-overlapping) first 10\n", oldComm[:10]
+    print "oldComm (last 10)", oldComm[-10:]
+    print oldComm[8:13]
     oldCommD = dict(oldComm)
-    print "oldCommD", oldCommD
 
     for edgePair in listEdges:  # [0, 0], [0, 1] loop over EDGES
-        #ok: print "edgePair", edgePair
+        #ok:
+        print "edgePair", edgePair
         Ed1 = edgePair[0]  # first edge
         Ed2 = edgePair[1]  # second edge
         oldCommVal = oldCommD[Ed1]  # group of the first edge
-        #ok: print "oldCommVal", oldCommVal
+        #ok:
+        print "oldCommVal", oldCommVal
         newCommVal = oldCommD[Ed2]  # group of the second edge
-        #ok: print "newCommVal", newCommVal
+        #ok:
+        print "newCommVal", newCommVal
         # build edge-comm pair
         oldPair = (Ed1, oldCommVal) # need tuples to deduplicate fast
         # build edge-comm pair
         newPair = (Ed1, newCommVal)
-        # if edge-comm pair in list, add more
-        lista.append(oldPair)
+        if oldPair not in lista:
+            lista.append(oldPair)
+            #ok: print "lista (si nosta mete valor del gpo original)", lista
         if newPair not in lista:
             # add group of second edge to previous grp value/values
             lista.append(newPair)
-            #ok: print "lista", lista
+            #ok: print "lista (mete valor del nvo gpo)", lista
+        #deebug code:
+        if Ed1 == 11:
+            print "break-------------------------"
+            break
 
     #deduplicate list:
+    lista = set(lista)
+
+    return lista
+# version3 using original list and just appending new node-comm pairs
+def newEdgeComm3(listEdges, oldComm):  # ok
+    lista = oldComm[:]  # node-comms
+    # OUT: [[0, 0], [0, 1], [1, 1], [2, 3], [3, 4], ...]
+
+    # change oldComm to dir for efficiently finding of node
+    print "oldComm (edge-comm - non-overlapping) first 10\n", oldComm[:10]
+    print "oldComm (last 10)", oldComm[-10:]
+    print oldComm[8:13]
+    oldCommD = dict(oldComm)
+
+    for edgePair in listEdges:  # [0, 0], [0, 1] loop over EDGES
+        #ok:
+        print "edgePair", edgePair
+        Ed1 = edgePair[0]  # first edge
+        Ed2 = edgePair[1]  # second edge
+        newCommVal = oldCommD[Ed2]  # group of the second edge
+        #ok:
+        print "newCommVal", newCommVal
+        # build edge-comm pair
+        newPair = (Ed1, newCommVal)
+        if newPair not in lista:
+            # add group of second edge to previous grp value/values
+            lista.append(newPair)
+            #ok: print "lista (mete valor del nvo gpo)", lista
+
+    # deduplicate list:
     lista = set(lista)
 
     return lista
@@ -290,9 +330,10 @@ def escribir_texto(listaL, fp):
 def abrir_archivos():
     # print sys.argv # 0: nombre de programa 1: nombre de archivo
     try:
-        #filename_IN01 = "data/facebook_combined.txt"  # este sí cambia
         # no blank lines at the end of file
-        filename_IN01 = "data/smallnet.txt"
+        filename_IN01 = "data/facebook_combined.txt"  # este sí cambia
+        #filename_IN01 = "data/facebook_combined_small.txt"  # este sí cambia
+        #filename_IN01 = "data/smallnet.txt"
         fpIN01 = open(filename_IN01, 'r')
         # outfile for Cytoscape visualization
         filename_IN02 = "data/smallgrp.txt"
@@ -318,17 +359,18 @@ def main():
 
     # This is for automatic dtection of groups with NX
     # NOTE: for the Klein example, the graph needs to be directed
-    '''
+
     gfb = nx.read_edgelist("data/facebook_combined.txt",
                            create_using=nx.Graph(),
                            nodetype=int
                            )
 
-
+    '''
     gfb = nx.read_edgelist("data/smallnet.txt",
                            create_using=nx.Graph(),
                            nodetype=int
                            )
+    '''
     '''
     # Use DiGraph for directed graph
     gfb = nx.read_edgelist("data/smallnet.txt",
@@ -336,20 +378,20 @@ def main():
                            nodetype=int
                            )
 
-    '''
+
     gfb = nx.read_edgelist("data/facebook_combined_small.txt",
                            create_using=nx.Graph(),
                            nodetype=int
                            )
-
+    '''
 
     print "\n--Reading matrix from file"
     print "first gfb.nodes", gfb.nodes()[:5]
     print "first gfb.edges", gfb.edges()[:5]
     print nx.info(gfb)
-    '''
 
-    # Network reading from file
+
+    # Network reading from file (necessary for automatic hg overlap)
     edgeList = leer_texto(inFilePointer01)
     print "\nEdge/Graph Info"
     print "edgeList (data read, first 10):"
@@ -379,13 +421,19 @@ def main():
     # drawing of communities disabled for PR code
     #okButDisabled: detectComm(gfb, None)
     '''
-    #original automatic community detection: parts = community.best_partition(gfb)
+
+    #original automatic community detection:
+    parts = community.best_partition(gfb)
     # parts is a dictionary having pairs of node-community
     # print type(parts)
-    #partsList = parts.items() # create a new list var to manipulate
+    #original automatic community detection:
+    partsList = parts.items() # create a new list var to manipulate
+    print "communities automatically detected\n"
 
     # Manual reading of node-Community file (artificial example)
-    partsList = leer_texto(inFilePointer02)
+    #partsList = leer_texto(inFilePointer02)
+    #print "communities articially created (read from file)\n"
+
 
     print "\nCommunity Info"
     # partsList is a list of 2-tuples, having pairs of (node, community)
@@ -403,7 +451,7 @@ def main():
     #XXXXXXXXXXXXXXX END: COMM STUFF XXXXXXXXXXXXXXX
 
 
-    '''
+
     #XXXXXXXXXXXXXXX BEG: HYPERG STUFF XXXXXXXXXXXXXXX
 
     # construct new overlapping hyperedges from non-overlapping ones
@@ -415,13 +463,16 @@ def main():
     # x = newEdgeComm(edgeList, partsList) # send edge list & old comm list
     #ok: print "x", x
     # This returns one list of lists with all node-comm pairs: (overlapping)
-    overlapComms = newEdgeComm2(edgeList, partsList) # send edge list & old comm list
+    # send edge list & old comm list
+    overlapComms = newEdgeComm3(edgeList, partsList)
     print "overlapComms", overlapComms
+    print "len(overlapComms)", len(overlapComms)
 
     # Var reassignment to avoid disruption in the downstream code
     partsList = overlapComms
 
     #XXXXXXXXXXXXXXX END: HYPERG STUFF XXXXXXXXXXXXXXX
+    '''
     '''
 
 
@@ -434,6 +485,8 @@ def main():
 
     # send only the values of edges to get the list of unique edges.
     edgeVals = [operator.itemgetter(0)(item) for item in partsList]
+    print "len(edgeVals)", len(edgeVals)
+    print "sorted", sorted(edgeVals)
     uniqEdgeL, lenUEdgL = getUniqueComm(edgeVals)
     print "uniqEdgeL, lenUEdgL", uniqEdgeL[:5], lenUEdgL
 
@@ -606,6 +659,10 @@ def main():
     # print top 10 items w higher pr score
     print "sorted PR", sorted(pr.items(), key=operator.itemgetter(1), \
                               reverse=True)[:10]
+
+    inFilePointer01.close()
+    inFilePointer02.close()
+
 
 if __name__ == '__main__':
     main()
