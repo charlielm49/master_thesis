@@ -320,6 +320,17 @@ def escribir_texto(listaL, fp):
     for item in listaL:
         item = separator.join(str(x) for x in item) + "\n"
         fp.write(item)
+# version for writing dictionary w/tuples
+def escribir_texto2(dic, fp):
+    # type: (dic, pointer) -> object
+    separator = ", "
+
+    for item in dic.items():
+        item = separator.\
+                   join(str(x).\
+                   replace("(", "").\
+                   replace(")", "") for x in item) + "\n"
+        fp.write(item)
 
 # Abre archivos entrada/salida / Regresa: apuntadores a archivos
 # 2015FEB21: ya no se ponen parámetros en línea de comandos porque
@@ -337,12 +348,14 @@ def abrir_archivos():
         # outfile for Cytoscape visualization
         filename_IN02 = "data/smallgrp.txt"
         fpIN02 = open(filename_IN02, 'r')
+        filename_OUT01 = "data/ranks.txt"
+        fpOUT01 = open(filename_OUT01, 'w')
     except IOError as e:
         print "Error de E/S ({0}): {1}".format(e.errno, e.strerror)
         sys.exit()
 
     # regresa apuntadores a archivos
-    return fpIN01, fpIN02
+    return fpIN01, fpIN02, fpOUT01
 
 
 
@@ -354,7 +367,10 @@ def main():
     # Read the network to make the hypergraphs
     # inFilePointer01 is ptr (read) to network file
     # inFilePointer02 is ptr (read) to groups file
-    inFilePointer01, inFilePointer02 = abrir_archivos()
+    inFilePointer01, \
+    inFilePointer02, \
+    outFilePointer01 \
+        = abrir_archivos()
 
     # This is for automatic dtection of groups with NX
     # NOTE: for the Klein example, the graph needs to be directed
@@ -568,8 +584,9 @@ def main():
     #ok: print nodeEigVec[:10]
     pprint.pprint(nodeEigVec[:10])
     print "sorted\n"
-    pprint.pprint(sorted(nodeEigVec, key=operator.itemgetter(1), \
-        reverse=True)[:10])
+    sortRanksHG = sorted(nodeEigVec, key=operator.itemgetter(1), \
+        reverse=True)
+    pprint.pprint(sortRanksHG[:10])
 
     #XXXXXXXXXXXXXXX END: MATRIX STUFF FOR HG XXXXXXXXXXXXXXX
 
@@ -621,9 +638,13 @@ def main():
 
     # eigenvectors
     '''
+
+    '''
     evalM, evecM = np.linalg.eig(MH2)
     print "eigenvals", evalM[:5], "\n"
     print "eigenvec", evecM[:, 1]
+    '''
+
     '''
     # iteraciones para sacar lso demas eigenvectores
     # necesitamos el primer eigenvector (eigenvec)
@@ -657,11 +678,11 @@ def main():
     pr = nx.pagerank(gfb)
     # print(type(pr))
     print pr.items()[-3:]  # print last 10 elements
-    # ok print:
-    pprint.pprint(pr.items())
+    # ok print: pprint.pprint(pr.items())
+    sortRankG = sorted(pr.items(), key=operator.itemgetter(1), \
+           reverse=True)
     # print top 10 items w higher pr score
-    print "sorted PR", sorted(pr.items(), key=operator.itemgetter(1), \
-                              reverse=True)[:10]
+    print "sorted PR", sortRankG[:10]
 
     inFilePointer01.close()
     inFilePointer02.close()
