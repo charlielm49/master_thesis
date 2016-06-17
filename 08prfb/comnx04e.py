@@ -331,6 +331,12 @@ def escribir_texto2(dic, fp):
                    replace("(", "").\
                    replace(")", "") for x in item) + "\n"
         fp.write(item)
+# version for writing list as is (requires a list of strings)
+def escribir_texto3(listaL, fp):
+
+    for item in listaL:
+        item = item + "\n"
+        fp.write(item)
 
 # Abre archivos entrada/salida / Regresa: apuntadores a archivos
 # 2015FEB21: ya no se ponen parámetros en línea de comandos porque
@@ -348,7 +354,7 @@ def abrir_archivos():
         # outfile for Cytoscape visualization
         filename_IN02 = "data/smallgrp.txt"
         fpIN02 = open(filename_IN02, 'r')
-        filename_OUT01 = "data/ranks.txt"
+        filename_OUT01 = "res/ranks.txt"
         fpOUT01 = open(filename_OUT01, 'w')
     except IOError as e:
         print "Error de E/S ({0}): {1}".format(e.errno, e.strerror)
@@ -583,12 +589,15 @@ def main():
     nodeEigVec = [(i, j) for i, j in enumerate(np.matrix.tolist(eigVec))]
     #ok: print nodeEigVec[:10]
     pprint.pprint(nodeEigVec[:10])
+
     print "sorted\n"
     sortRanksHG = sorted(nodeEigVec, key=operator.itemgetter(1), \
         reverse=True)
     pprint.pprint(sortRanksHG[:10])
-
+    rankSortSave = [str(x) + " " +str(y[0]) for x, y in sortRanksHG]
+    print "rankSortSave", rankSortSave[:10]
     #XXXXXXXXXXXXXXX END: MATRIX STUFF FOR HG XXXXXXXXXXXXXXX
+
 
     '''
     #XXXXXXXXXXXXXXX BEG: MATRIX STUFF FOR G XXXXXXXXXXXXXXX
@@ -684,8 +693,18 @@ def main():
     # print top 10 items w higher pr score
     print "sorted PR", sortRankG[:10]
 
+    # add sorted ranks of graph to rankSortSave for saving to file
+    rankSortSave2 = [str(x) + " " +str(y) for x, y in sortRankG]
+    print "rankSortSave", rankSortSave2[:10]
+    rankSortSave3 = [str(x) + " " +str(y)
+                    for x, y in zip(rankSortSave, rankSortSave2)]
+    print "rankSortSave", rankSortSave3[:10]
+    escribir_texto3(rankSortSave3, outFilePointer01)
+
+
     inFilePointer01.close()
     inFilePointer02.close()
+    outFilePointer01.close()
 
 
 if __name__ == '__main__':
