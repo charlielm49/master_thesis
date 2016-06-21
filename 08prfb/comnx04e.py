@@ -37,7 +37,7 @@ def getUniqueComm(vertexCommunityL):
     return commUniqList, lenUL
 
 
-# Create format requisito for csr from in the Klein format
+# Create CSR sparse matrix
 # THIS RETURNS INCIDENCE MATRIX OF HYPERGRAPH (H)
 # Iterate over the list and substitute
 # IN01: (indexList: list of 2-tuples node-edge)
@@ -98,9 +98,10 @@ def createPrevCSR2(invDegreePairs):
     #ok-butchangetoCSR return rows, cols, data
     return csrMat
 
+
+# Counts number of edges each vertex belongs to
 # IN01: list of 2-tuples node-edge
 # OUT01: dictionary with node degree (how many edges a vertex belongs to)
-# just counts number of edges each vertex belongs to
 def getInvDvMatr(nodeEdgeL):
     # type: (list) -> dictionary
     nodeEdgeCount = {}
@@ -129,8 +130,11 @@ def getInvDvMatr(nodeEdgeL):
     return createPrevCSR2(invNodeEdgeCount)
 
 
-# Matrix = A
-# initVector = v
+# Implementation of power method to obtain dominating eigenvalue of a matrix
+# IN01: A = Transition Matrix (numpy matrix)
+# IN02: v = initial prob distribution Vector (numpy matrix)
+# OUT01: eigval = dominating eigenvalue (float)
+# OUT02: v = corresp. eigenvector (numpy matrix)
 def iteration(A, v):
     MAX_ITER = 100 # works ok for simple cases of PageRank
     MAX_ITER = 10000
@@ -170,7 +174,7 @@ def iteration(A, v):
     # eigVec = v
     return eigVal, v
 
-
+# Makes initial vector for iterating with Transition matrix
 def makeInitVec(listSize):
     # pdb.set_trace()
     matRows = listSize  # size of the matrix (assuming square)
@@ -180,12 +184,14 @@ def makeInitVec(listSize):
 
     return newList
 
+# Links the non-overlapping groups to create intersecting groups
+# to form insertecting hyperedges
 # NOTE: ONLY works for non-overlapping communities
 # if node-comm pair not in original node-pair list, add it
 # edgeList: [[0, 0], [1, 2], [2, 1], ..., [5, 1], [5, 4]]
 # oldComm (partsList): [[0, 0], [1, 0], ..., [4037, 6], [4038, 6]]
-# NOTE: partsList can have many groups for the same node, so we can't 
-#       have a dict for this list
+# NOTE: partsList (edgeList) can have many groups for the same node,
+#       so we can't have a dict for this list
 def newEdgeComm(listEdges, oldComm): #ok
     lista = {} #node-comms
     #{1:[1, 2, 3], 2:[3, 4], ...}
@@ -295,6 +301,8 @@ def newEdgeComm3(listEdges, oldComm):  # ok
     # need to convert back again in order to print first items
     return list(lista)
 
+# Reads text file
+# File format: a 2-column list of numbers, separated by tab/space
 def leer_texto(fp):
     tmpFull = []
     # procesamiento de archivo de entrada completo
@@ -354,7 +362,7 @@ def abrir_archivos():
         # outfile for Cytoscape visualization
         filename_IN02 = "data/smallgrp.txt"
         fpIN02 = open(filename_IN02, 'r')
-        filename_OUT01 = "res/ranks.txt"
+        filename_OUT01 = "res/sortRanks.txt"
         fpOUT01 = open(filename_OUT01, 'w')
     except IOError as e:
         print "Error de E/S ({0}): {1}".format(e.errno, e.strerror)
@@ -443,7 +451,7 @@ def main():
     #okButDisabled: detectComm(gfb, None)
     '''
 
-    #original automatic community detection:
+    # Automatic community detection:
     parts = community.best_partition(gfb)
     # parts is a dictionary having pairs of node-community
     # print type(parts)
@@ -476,7 +484,7 @@ def main():
     '''
     #XXXXXXXXXXXXXXX BEG: HYPERG STUFF XXXXXXXXXXXXXXX
 
-    # construct new overlapping hyperedges from non-overlapping ones
+    # Construct new overlapping hyperedges from non-overlapping ones
     # get new edge-community
     # edgeList = [[0, 0], [1, 2], [2, 1], [3, 0], [3, 1], [4, 1], \
     # [4, 3], [4, 5], [5, 1], [5, 4]]
@@ -500,7 +508,7 @@ def main():
 
     #XXXXXXXXXXXXXXX BEG: MATRIX STUFF FOR HG XXXXXXXXXXXXXXX
 
-    # send only the values of commununities to get the list of unique communit.
+    # Send only the values of commununities to get the list of unique communit.
     commVals = [operator.itemgetter(1)(item) for item in partsList]
     uniqCommL, lenUComL = getUniqueComm(commVals)
     print "\nuniqCommL, lenUComL", uniqCommL[:5], lenUComL
@@ -513,7 +521,7 @@ def main():
     print "uniqEdgeL, lenUEdgL", uniqEdgeL[:5], lenUEdgL
 
 
-    # obtain incidence matrix vertex-hyperedge (H)
+    # Obtain incidence matrix vertex-hyperedge (H)
     # en networkx basta con meter la lista que salio de las comunidades
     print "\n--Creating Incidence Matrix from node-community pairs\n"
     # 2) send 1) node-community 2-tuple list & number of unique communities
@@ -553,7 +561,7 @@ def main():
     MH = dv_1H.dot(de_1Ht)
     print "\nMH\n", MH[:10]
 
-    # --- Matriz de teletransportacion
+    # --- Matriz de teletransportacion (to make  m\trix irreducible)
     matSize = len(MH)
     teleMat = [[1. / matSize for j in range(matSize)] for i in range(matSize)]
     #check: print "teleMat", teleMat[:3][:3]
@@ -573,7 +581,7 @@ def main():
     print "eigenvals", evalM[:5], "\n"
     print "eigenvec", evecM[:, 1]
     '''
-    # iteraciones para sacar lso demas eigenvectores
+    # iteraciones para sacar los demas eigenvectores
     # necesitamos el primer eigenvector (eigenvec)
     # Define initial vector v
     v = np.matrix(makeInitVec(matSize))
@@ -600,7 +608,7 @@ def main():
 
 
     '''
-    #XXXXXXXXXXXXXXX BEG: MATRIX STUFF FOR G XXXXXXXXXXXXXXX
+    #XXXXXXXXXXXXXXX BEG: MATRIX STUFF FOR GRAPH XXXXXXXXXXXXXXX
 
     # We need to build the vertex-edge list [(), (), ...]
     # We already have the graph node-node information in edgeList
